@@ -124,6 +124,36 @@
             <button>Abrir Agenda</button>
         </a>
     </div>
+    <script>
+        const API_KEY = "SUA_CHAVE_DE_API"; // Substitua pela sua chave
+        const CALENDAR_ID = "SEU_ID_DO_CALENDARIO"; // Ex: abc123@group.calendar.google.com
+
+        async function carregarEventos() {
+        const url = `https://www.googleapis.com/calendar/v3/calendars/${CALENDAR_ID}/events?key=${API_KEY}`;
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            const eventos = data.items.map(evento => ({
+                nome: evento.summary,
+                data: evento.start.dateTime || evento.start.date,
+                descricao: evento.description || ""
+            }));
+
+            // Exibir eventos na página (exemplo simples)
+            const lista = document.getElementById('eventos');
+            lista.innerHTML = eventos.map(e => `<li>${e.nome} (${e.data})</li>`).join('');
+
+            // Salvar no localStorage (opcional)
+            localStorage.setItem('eventosGoogle', JSON.stringify(eventos));
+                } catch (erro) {
+            console.error("Erro ao carregar eventos:", erro);
+            }
+        }
+    
+        // Carrega os eventos quando a página abre
+        window.onload = carregarEventos;
+    </script>
 
 
 
