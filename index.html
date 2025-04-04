@@ -120,40 +120,65 @@
     
     <div class="container">
         <h1>Bem-vindo à Agenda HSP</h1>
-        <a href="https://calendar.google.com/calendar/embed?src=1df0a5693cf70921ffb5348764485c0fa89a078e7c3fba127d865f606454135e%40group.calendar.google.com&ctz=America%2FSao_Paulo" target="_blank">
+        <a href="https://calendar.google.com/calendar/embed?src=1df0a5693cf70921ffb5348764485c0fa89a078e7c3fba127d865f606454135e%40group.calendar.google.com&src=pt-br.brazilian%23holiday%40group.v.calendar.google.com&ctz=America%2FSao_Paulo" target="_blank">
             <button>Abrir Agenda</button>
         </a>
     </div>
-    <script>
-        const API_KEY = "SUA_CHAVE_DE_API"; // Substitua pela sua chave
-        const CALENDAR_ID = "SEU_ID_DO_CALENDARIO"; // Ex: abc123@group.calendar.google.com
 
-        async function carregarEventos() {
-        const url = `https://www.googleapis.com/calendar/v3/calendars/${CALENDAR_ID}/events?key=${API_KEY}`;
+<script>
+    const API_KEY1 = "AIzaSyDHCGYgTAlS6PCJZu52BsFEO2vNfZtWfEw"; // Chave para a agenda principal
+    const CALENDAR_ID1 = "1df0a5693cf70921ffb5348764485c0fa89a078e7c3fba127d865f606454135e@group.calendar.google.com";
+    
+    const API_KEY2 = "AIzaSyDmMOTXVyzQRqEmHrMICDpitldPDVEjTqo"; // Chave para a agenda de feriados
+    const CALENDAR_ID2 = "pt-br.brazilian#holiday@group.v.calendar.google.com";
+
+    async function carregarEventos() {
+        const url1 = `https://www.googleapis.com/calendar/v3/calendars/${CALENDAR_ID1}/events?key=${API_KEY1}`;
+        const url2 = `https://www.googleapis.com/calendar/v3/calendars/${CALENDAR_ID2}/events?key=${API_KEY2}`;
 
         try {
-            const response = await fetch(url);
-            const data = await response.json();
-            const eventos = data.items.map(evento => ({
-                nome: evento.summary,
-                data: evento.start.dateTime || evento.start.date,
-                descricao: evento.description || ""
-            }));
+            // Fazer requisições para ambas as agendas
+            const [res1, res2] = await Promise.all([fetch(url1), fetch(url2)]);
+            const data1 = await res1.json();
+            const data2 = await res2.json();
 
-            // Exibir eventos na página (exemplo simples)
+            // Processar eventos da agenda principal
+            const eventos1 = data1.items?.map(evento => ({
+                nome: evento.summary,
+                data: new Date(evento.start.dateTime || evento.start.date),
+                descricao: evento.description || "",
+                tipo: "Evento",
+                cor: "blue" // Define cor para os eventos normais
+            })) || [];
+
+            // Processar feriados
+            const eventos2 = data2.items?.map(evento => ({
+                nome: evento.summary,
+                data: new Date(evento.start.dateTime || evento.start.date),
+                descricao: evento.description || "",
+                tipo: "Feriado",
+                cor: "red" // Define cor para os feriados
+            })) || [];
+
+            // Unir e ordenar eventos por data
+            const todosEventos = [...eventos1, ...eventos2].sort((a, b) => a.data - b.data);
+
+            // Exibir eventos na página
             const lista = document.getElementById('eventos');
-            lista.innerHTML = eventos.map(e => `<li>${e.nome} (${e.data})</li>`).join('');
+            lista.innerHTML = todosEventos.map(e => 
+                `<li style="color: ${e.cor};"><strong>${e.tipo}:</strong> ${e.nome} - ${e.data.toLocaleDateString("pt-BR")}</li>`
+            ).join('');
 
             // Salvar no localStorage (opcional)
-            localStorage.setItem('eventosGoogle', JSON.stringify(eventos));
-                } catch (erro) {
+            localStorage.setItem('eventosGoogle', JSON.stringify(todosEventos));
+        } catch (erro) {
             console.error("Erro ao carregar eventos:", erro);
-            }
         }
-    
-        // Carrega os eventos quando a página abre
-        window.onload = carregarEventos;
-    </script>
+    }
+
+    // Carrega os eventos quando a página abre
+    window.onload = carregarEventos;
+</script>
 
 
 
