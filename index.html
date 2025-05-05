@@ -120,7 +120,8 @@
     
     <div class="container">
         <h1>Bem-vindo à Agenda HSP</h1>
-        <a href="https://calendar.google.com/calendar/embed?src=1df0a5693cf70921ffb5348764485c0fa89a078e7c3fba127d865f606454135e%40group.calendar.google.com&src=pt-br.brazilian%23holiday%40group.v.calendar.google.com&ctz=America%2FSao_Paulo" target="_blank">
+        <a href="https://calendar.google.com/calendar/embed?src=1df0a5693cf70921ffb5348764485c0fa89a078e7c3fba127d865f606454135e%40group.calendar.google.com&src=pt-br.brazilian%23holiday%40group.v.calendar.google.com&src=97d96f98a1867458855e23be3bb49b5b2b0a35fe4e56ac67c0be449b19a3934f%40group.calendar.google.com&ctz=America%2FSao_Paulo
+        " target="_blank">
             <button>Abrir Agenda</button>
         </a>
     </div>
@@ -132,15 +133,20 @@
     const API_KEY2 = "AIzaSyDmMOTXVyzQRqEmHrMICDpitldPDVEjTqo"; // Chave para a agenda de feriados
     const CALENDAR_ID2 = "pt-br.brazilian#holiday@group.v.calendar.google.com";
 
+    const API_KEY3 = "AIzaSyCWpnu4BcKyACMzzvPr6dzck9zVbI6kctQ";
+    const CALENDAR_ID3 = "97d96f98a1867458855e23be3bb49b5b2b0a35fe4e56ac67c0be449b19a3934f@group.calendar.google.com"
+
     async function carregarEventos() {
         const url1 = `https://www.googleapis.com/calendar/v3/calendars/${CALENDAR_ID1}/events?key=${API_KEY1}`;
         const url2 = `https://www.googleapis.com/calendar/v3/calendars/${CALENDAR_ID2}/events?key=${API_KEY2}`;
+        const url3 = `https://www.googleapis.com/calendar/v3/calendars/${CALENDAR_ID3}/events?key=${API_KEY3}`;
 
         try {
             // Fazer requisições para ambas as agendas
-            const [res1, res2] = await Promise.all([fetch(url1), fetch(url2)]);
+            const [res1, res2, res3] = await Promise.all([fetch(url1), fetch(url2), fetch(url3)]);
             const data1 = await res1.json();
             const data2 = await res2.json();
+            const data3 = await res3.json();
 
             // Processar eventos da agenda principal
             const eventos1 = data1.items?.map(evento => ({
@@ -159,9 +165,16 @@
                 tipo: "Feriado",
                 cor: "red" // Define cor para os feriados
             })) || [];
+            const eventos3 = data3.items?.map(evento => ({
+                nome: evento.summary,
+                data: new Date(evento.start.dateTime || evento.start.date),
+                descricao: evento.description || "",
+                tipo: "Feriado",
+                cor: "green" // Define cor para os feriados
+            })) || [];
 
             // Unir e ordenar eventos por data
-            const todosEventos = [...eventos1, ...eventos2].sort((a, b) => a.data - b.data);
+            const todosEventos = [...eventos1, ...eventos2, ...eventos3].sort((a, b, c) => a.data - b.data - c.data);
 
             // Exibir eventos na página
             const lista = document.getElementById('eventos');
